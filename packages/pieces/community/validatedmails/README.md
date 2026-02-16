@@ -1,6 +1,8 @@
 # @activepieces/piece-validatedmails
 
-ValidatedMails is an email validation API integration for Activepieces that validates a single email address and returns a consistent, flat response contract suitable for routing, scoring, and downstream decision steps.
+## Not Slightly Cheaper. Nuclear Undercutting.
+
+Legacy providers carry legacy costs. We built a system for power users pushing millions of validations. Our auto-scaled orchestration drives structural efficiency traditional vendors can’t replicate.
 
 ## Example workflow
 
