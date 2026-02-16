@@ -13,29 +13,8 @@ export const validateEmail = createAction({
       description: 'The email address to validate.',
       required: true,
     }),
-    dnsTimeoutMs: Property.Number({
-      displayName: 'DNS Timeout (ms)',
-      description: 'DNS timeout in milliseconds. Value is clamped between 200 and 5000.',
-      required: false,
-      defaultValue: 1500,
-    }),
-    mode: Property.StaticDropdown({
-      displayName: 'Mode',
-      description: 'HTTP method used for validation request.',
-      required: true,
-      defaultValue: 'POST',
-      options: {
-        options: [
-          { label: 'POST', value: 'POST' },
-          { label: 'GET', value: 'GET' },
-        ],
-      },
-    }),
   },
   async run(context) {
-    return executeValidateEmailRequest({
-      ...context.propsValue,
-      mode: context.propsValue.mode as 'POST' | 'GET',
-    }, context.auth.secret_text);
+    return executeValidateEmailRequest(context.propsValue, context.auth.secret_text);
   },
 });
