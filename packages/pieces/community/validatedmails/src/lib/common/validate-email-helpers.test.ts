@@ -3,7 +3,6 @@ import {
   assertEmailInput,
   executeValidateEmailRequest,
   mapHttpStatusToError,
-  normalizeDnsTimeoutMs,
   toValidationOutput,
 } from './validate-email-helpers';
 
@@ -13,60 +12,6 @@ describe('validatedmails helpers', () => {
       'Email address must contain @'
     );
     expect(() => assertEmailInput(' user@example.com ')).not.toThrow();
-  });
-
-  test('normalizes dns timeout with defaults and clamping', () => {
-    expect(normalizeDnsTimeoutMs(undefined)).toBe(1500);
-    expect(normalizeDnsTimeoutMs(50)).toBe(200);
-    expect(normalizeDnsTimeoutMs(9000)).toBe(5000);
-    expect(normalizeDnsTimeoutMs(1800.7)).toBe(1801);
-  });
-
-  test('routes to GET with query params', async () => {
-    const sender = jest.fn().mockResolvedValue({
-      body: {
-        is_valid: true,
-        score: 99,
-        email: 'user@example.com',
-        normalized: 'user@example.com',
-        state: 'Deliverable',
-        reason: 'ACCEPTED EMAIL',
-        domain: 'example.com',
-        free: false,
-        role: false,
-        disposable: false,
-        accept_all: false,
-        tag: false,
-        smtp_ok: true,
-        syntax_ok: true,
-        mx_ok: true,
-        a_ok: true,
-        response_ms: 300,
-        mx_hosts: ['mx.example.com'],
-        status: 'valid',
-        reasons: ['syntax_ok'],
-        trace_id: 'trace-1',
-      },
-    });
-
-    await executeValidateEmailRequest(
-      {
-        email: ' user@example.com ',
-        mode: 'GET',
-      },
-      'api-key',
-      sender
-    );
-
-    expect(sender).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: HttpMethod.GET,
-        queryParams: {
-          email: 'user@example.com',
-          dns_timeout_ms: '1500',
-        },
-      })
-    );
   });
 
   test('routes to POST with body', async () => {
@@ -98,9 +43,7 @@ describe('validatedmails helpers', () => {
 
     await executeValidateEmailRequest(
       {
-        email: 'user@example.com',
-        mode: 'POST',
-        dnsTimeoutMs: 1800,
+        email: ' user@example.com ',
       },
       'api-key',
       sender
@@ -111,7 +54,6 @@ describe('validatedmails helpers', () => {
         method: HttpMethod.POST,
         body: {
           email: 'user@example.com',
-          dns_timeout_ms: 1800,
         },
       })
     );
@@ -157,7 +99,6 @@ describe('validatedmails helpers', () => {
     const result = await executeValidateEmailRequest(
       {
         email: 'user@example.com',
-        mode: 'POST',
       },
       'api-key',
       sender
@@ -206,7 +147,6 @@ describe('validatedmails helpers', () => {
     const result = await executeValidateEmailRequest(
       {
         email: 'user@example.com',
-        mode: 'POST',
       },
       'api-key',
       sender
@@ -216,12 +156,14 @@ describe('validatedmails helpers', () => {
     expect(sender).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
+        method: HttpMethod.POST,
         url: 'https://api.validatedmails.com/validate',
       })
     );
     expect(sender).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
+        method: HttpMethod.POST,
         url: 'https://api.validatedmails.com/validate/',
       })
     );

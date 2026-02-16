@@ -27,6 +27,4 @@ export type ValidatedMailsValidationResponse = {
 
 export type ValidateEmailProps = {
   email: string;
-  dnsTimeoutMs?: number;
-  mode: 'POST' | 'GET';
 };

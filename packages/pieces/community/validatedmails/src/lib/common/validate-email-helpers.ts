@@ -4,10 +4,6 @@ import {
   ValidatedMailsValidationResponse,
 } from './types';
 
-const MIN_DNS_TIMEOUT_MS = 200;
-const MAX_DNS_TIMEOUT_MS = 5000;
-const DEFAULT_DNS_TIMEOUT_MS = 1500;
-
 const ERR_UNAUTHORIZED = 'Unauthorized: Invalid API key';
 const ERR_INSUFFICIENT_CREDITS = 'Insufficient credits';
 const ERR_RATE_LIMITED = 'Rate limited';
@@ -25,14 +21,6 @@ export function assertEmailInput(email: string): void {
   if (!sanitizedEmail.includes('@')) {
     throw new Error('Email address must contain @');
   }
-}
-
-export function normalizeDnsTimeoutMs(dnsTimeoutMs?: number): number {
-  if (dnsTimeoutMs === undefined || Number.isNaN(dnsTimeoutMs)) {
-    return DEFAULT_DNS_TIMEOUT_MS;
-  }
-
-  return Math.min(Math.max(Math.round(dnsTimeoutMs), MIN_DNS_TIMEOUT_MS), MAX_DNS_TIMEOUT_MS);
 }
 
 export function mapHttpStatusToError(status: number): Error {
@@ -130,36 +118,22 @@ export async function executeValidateEmailRequest(
   const sanitizedEmail = sanitizeEmail(propsValue.email);
   assertEmailInput(sanitizedEmail);
 
-  const dnsTimeoutMs = normalizeDnsTimeoutMs(propsValue.dnsTimeoutMs);
   const request = {
+    method: HttpMethod.POST,
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     timeout: 10000,
+    body: {
+      email: sanitizedEmail,
+    },
   };
 
   const send = async (url: string) => {
-    if (propsValue.mode === 'GET') {
-      return requestSender({
-        method: HttpMethod.GET,
-        url,
-        ...request,
-        queryParams: {
-          email: sanitizedEmail,
-          dns_timeout_ms: String(dnsTimeoutMs),
-        },
-      });
-    }
-
     return requestSender({
-      method: HttpMethod.POST,
       url,
       ...request,
-      body: {
-        email: sanitizedEmail,
-        dns_timeout_ms: dnsTimeoutMs,
-      },
     });
   };
 
